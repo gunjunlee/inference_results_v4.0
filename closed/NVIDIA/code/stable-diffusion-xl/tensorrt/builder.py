@@ -115,7 +115,8 @@ class SDXLBaseBuilder(TRTBuilder,
         else:
             # Parse from ONNX file
             # set instance norm flag for better perf of SDXL
-            success = parser.parse(onnx._serialize(model))
+            # success = parser.parse(onnx._serialize(model))
+            success = parser.parse(model.SerializeToString())
             if not success:
                 err_desc = parser.get_error(0).desc()
                 raise RuntimeError(f"Parse SDXL graphsurgeon onnx model failed! Error: {err_desc}")

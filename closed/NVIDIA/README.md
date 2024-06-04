@@ -1,3 +1,117 @@
+# MLPerf Inference v4.0 NVIDIA-Optimized Implementations (Customized)
+
+## How to setup and run the benchmark
+
+CAUTION: At least 128 GB of RAM is required.
+
+```
+conda create -y -n mlperf-sd python=3.10 && conda activate mlperf-sd
+conda install -c nvidia cuda-toolkit=12.1 --dry-run --json \
+    | python -c "import json, sys; data = json.loads('\n'.join(line for line in sys.stdin)); print(' '.join([lib['name']+'=12.1' for lib in data.get('actions', {'LINK': []})['LINK'] if 'cuda-' in lib['name'] and 'nvvm' not in lib['name'] and 'crt' not in lib['name']]).strip(), end='')" \
+    | xargs -e conda install -c pytorch -c nvidia -c conda-forge -y \
+        pytorch torchvision torchaudio pytorch-cuda=12.1 \
+        diffusers transformers onnx \
+        nvtx cuda-nvtx=12.1 cuda-python=12.1 pycuda \
+        cuda-toolkit=12.1 \
+        cudnn \
+        accelerate optimum \
+        conda-tree pkg-config \
+        "kernel-headers_linux-64>=4" \
+        cmake ninja ccache c-compiler cxx-compiler \
+        glog=0.3.5 pybind11 libnuma curl
+
+# if TensorRT-9.3.0.1 is not available, download it from the NVIDIA website
+if [ ! -d "TensorRT-9.3.0.1" ]; then
+    wget https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/9.3.0/tensorrt-9.3.0.1.linux.x86_64-gnu.cuda-12.2.tar.gz
+    tar xvf tensorrt-9.3.0.1.linux.x86_64-gnu.cuda-12.2.tar.gz
+fi
+
+pip install --upgrade pip
+pip install onnx_graphsurgeon nvidia-ammo
+pip install nvidia-dali-cuda120
+pip install TensorRT-9.3.0.1/python/tensorrt-9.3.0.post12.dev1-cp310-none-linux_x86_64.whl
+pip install polygraphy
+
+conda deactivate && conda activate mlperf-sd
+
+find "$PWD/TensorRT-9.3.0.1/lib/" -type l,f -exec basename {} \; | xargs -I{} ln -sf $PWD/TensorRT-9.3.0.1/lib/{} $CONDA_PREFIX/lib/{}
+find "$PWD/TensorRT-9.3.0.1/include/" -type l,f -exec basename {} \; | xargs -I{} ln -sf $PWD/TensorRT-9.3.0.1/include/{} $CONDA_PREFIX/include/{}
+python -c "import tensorrt" && echo "TensorRT installed successfully" || echo "TensorRT installation failed"
+
+if [ ! -d "TensorRT" ]; then
+    git clone https://github.com/NVIDIA/TensorRT.git
+fi
+cd TensorRT && git checkout v9.3.0 && git submodule update --init --recursive && cd ..
+
+if [ ! -d "TensorRT/build" ]; then
+    rm -rf $PWD/TensorRT/build
+fi
+CMAKE_C_COMPILER_LAUNCHER=ccache \
+    CMAKE_CXX_COMPILER_LAUNCHER=ccache \
+    CMAKE_CUDA_COMPILER_LAUNCHER=ccache \
+    cmake -S $PWD/TensorRT -B $PWD/TensorRT/build \
+    -DTRT_LIB_DIR=$PWD/TensorRT-9.3.0.1 \
+    -Dnvinfer_LIB_PATH=$PWD/TensorRT-9.3.0.1/lib/libnvinfer.so \
+    -DTRT_OUT_DIR=$PWD/TensorRT/build/out \
+    -DCUDNN_ROOT_DIR=$CONDA_PREFIX
+cmake --build $PWD/TensorRT/build -j $(nproc)
+
+ln -sf $CONDA_PREFIX/lib $CONDA_PREFIX/targets/x86_64-linux/lib64
+
+# download dataset for calibration. The process will take under 1 minutes
+MLPERF_SCRATCH_PATH=$PWD BENCHMARKS=stable-diffusion-xl make download_data
+MLPERF_SCRATCH_PATH=$PWD BENCHMARKS=stable-diffusion-xl make download_model
+
+# download model. (~6.46 GB)
+mkdir -p $PWD/models/SDXL/official_pytorch/fp16
+wget -O $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
+    https://cloud.mlcommons.org/index.php/s/LCdW5RM6wgGWbxC/download
+
+unzip $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
+    -d $PWD/models/SDXL/official_pytorch/fp16/
+
+# Runing SDXL UNet quantization on 500 calibration captions. The process will take ~90 mins on RTX4090
+python3 -m code.stable-diffusion-xl.tensorrt.create_onnx_model --model-dir $PWD/models --output-dir $PWD/models
+
+# Exporting SDXL fp16-int8 UNet onnx. The process will take ~10 mins on RTX 4090
+python3 -m code.stable-diffusion-xl.ammo.export_onnx \
+    --pretrained-base $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16/checkpoint_pipe/ \
+    --quantized-ckpt $PWD/models/SDXL/ammo_models/unetxl.int8.pt \
+    --quant-level 2.5 \
+    --onnx-dir $PWD/models/SDXL/ammo_models/unetxl.int8
+
+# Build Engine
+LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
+    CPATH=$CONDA_PREFIX/include \
+    CXXPATH=$CONDA_PREFIX/include \
+    MLPERF_SCRATCH_PATH=$PWD \
+    TRT_LIB_DIR=$CONDA_PREFIX/lib TRT_INCLUDE_DIR=$CONDA_PREFIX/include \
+    CUB_DIR=$CONDA_PREFIX/include \
+    CUDNN_LIB_DIR=$CONDA_PREFIX/lib CUDNN_INC_DIR=$CONDA_PREFIX/include \
+    CUDA_INC_DIR=$CONDA_PREFIX/include \
+    CMAKE_EXPORT_COMPILE_COMMANDS=ON \
+    make build
+
+if [ ! -d "mitten" ]; then
+    git clone https://github.com/NVIDIA/mitten.git
+fi
+cd mitten && git checkout main && git submodule update --init --recursive && cd ..
+pip install -e mitten
+pip install --upgrade onnxruntime onnx
+
+# Generate engines
+LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
+    CPATH=$CONDA_PREFIX/include \
+    CXXPATH=$CONDA_PREFIX/include \
+    MLPERF_SCRATCH_PATH=$PWD \
+    make generate_engines RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=Offline"
+
+# Run benchmark
+LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
+    MLPERF_SCRATCH_PATH=$PWD \
+    make run_harness RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=Offline --test_mode=PerformanceOnly"
+```
+
 # MLPerf Inference v4.0 NVIDIA-Optimized Implementations
 This is a repository of NVIDIA-optimized implementations for the [MLPerf](https://mlcommons.org/en/) Inference Benchmark.
 This README is a quickstart tutorial on how to use our code as a public / external user.
