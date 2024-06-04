@@ -98,6 +98,12 @@ class KnownGPU(MatchableEnum):
                max_power_limit=350.0,
                pci_id=pci_id_match_list(("26B9",)),
                compute_sm=89)
+    GeForceRTX_4090 = GPU(AliasedName("NVIDIA GeForce RTX 4090", ("NVIDIA GeForce RTX 4090")),
+                          AcceleratorType.Discrete,
+                          match_float_approximate(Memory(24, ByteSuffix.GiB)),
+                          520.0,
+                          pci_id_match_list(("2684",)), # https://download.nvidia.com/XFree86/Linux-x86_64/555.42.02/README/supportedchips.html
+                          89)
     H100_SXM_80GB = GPU(name="NVIDIA H100 80GB HBM3",
                         accelerator_type=AcceleratorType.Discrete,
                         vram=match_float_approximate(Memory(80, ByteSuffix.GiB)),

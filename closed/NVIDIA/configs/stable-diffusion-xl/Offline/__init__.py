@@ -97,6 +97,14 @@ class L40Sx8(L40Sx1):
 
 
 @ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
+class GeForceRTX_4090x1(OfflineGPUBaseConfig):
+    system = KnownSystem.GeForceRTX_4090x1
+    gpu_batch_size = 1
+    offline_expected_qps = 0.6
+    use_graphs = True
+
+
+@ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
 class Orin(OfflineGPUBaseConfig):
     system = KnownSystem.Orin
     precision = "fp16"

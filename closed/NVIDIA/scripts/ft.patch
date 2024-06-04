@@ -1,0 +1,65 @@
+diff --git a/3rdparty/fp8_qgmma_1x1/conv1x1_interface.hpp b/3rdparty/fp8_qgmma_1x1/conv1x1_interface.hpp
+index 1308bfc..6aeafc5 100755
+--- a/3rdparty/fp8_qgmma_1x1/conv1x1_interface.hpp
++++ b/3rdparty/fp8_qgmma_1x1/conv1x1_interface.hpp
+@@ -1,7 +1,9 @@
+ #ifndef CONV1x1_INTERFACE_HPP_
+ #define CONV1x1_INTERFACE_HPP_
+ 
+-class Conv1x1Interface 
++#include <stdint.h>
++
++class Conv1x1Interface
+ {
+ public:
+     virtual void run(uint8_t* D, uint8_t* A, uint8_t* B, uint16_t* bias, float ab_scale, float d_scale, int N, int H, int W, int C, int K) = 0;
+diff --git a/3rdparty/fp8_qgmma_1x1/fp8_qgmma_1x1_utils.cu b/3rdparty/fp8_qgmma_1x1/fp8_qgmma_1x1_utils.cu
+index 566fa78..adade2d 100644
+--- a/3rdparty/fp8_qgmma_1x1/fp8_qgmma_1x1_utils.cu
++++ b/3rdparty/fp8_qgmma_1x1/fp8_qgmma_1x1_utils.cu
+@@ -18,6 +18,8 @@
+ #error CUDART_VERSION Undefined!
+ #endif
+ 
++#include <stdio.h>
++
+ #define gpuErrChk(ans)                        \
+     {                                         \
+         gpuAssert((ans), __FILE__, __LINE__); \
+diff --git a/src/fastertransformer/utils/cublasMMWrapper.h b/src/fastertransformer/utils/cublasMMWrapper.h
+index 0c7ecbf..2801d75 100644
+--- a/src/fastertransformer/utils/cublasMMWrapper.h
++++ b/src/fastertransformer/utils/cublasMMWrapper.h
+@@ -23,6 +23,7 @@
+ #include <map>
+ #include <mutex>
+ #include <string>
++#include <array>
+ 
+ #pragma once
+ namespace fastertransformer {
+diff --git a/src/fastertransformer/utils/cuda_fp8_utils.h b/src/fastertransformer/utils/cuda_fp8_utils.h
+index 5b68117..f1f1493 100644
+--- a/src/fastertransformer/utils/cuda_fp8_utils.h
++++ b/src/fastertransformer/utils/cuda_fp8_utils.h
+@@ -20,6 +20,8 @@
+ #include <cuda_fp8.h>
+ #include <cuda_runtime.h>
+ #include <stdint.h>
++#include <stdio.h>
++#include <algorithm>
+ 
+ // #define FP8_MHA
+ #if defined(__CUDA_ARCH__) && __CUDA_ARCH__ == 900
+diff --git a/src/fastertransformer/utils/cuda_utils.h b/src/fastertransformer/utils/cuda_utils.h
+index 331b6f2..b8a02ab 100644
+--- a/src/fastertransformer/utils/cuda_utils.h
++++ b/src/fastertransformer/utils/cuda_utils.h
+@@ -27,6 +27,7 @@
+ #include <iostream>
+ #include <string>
+ #include <vector>
++#include <stdio.h>
+ #ifdef SPARSITY_ENABLED
+ #include <cusparseLt.h>
+ #endif

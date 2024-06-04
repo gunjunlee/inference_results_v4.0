@@ -23,6 +23,7 @@
 #include <numeric>
 #include <regex>
 #include <vector>
+#include <cstring>
 
 #include "logger.h"
 #include <glog/logging.h>

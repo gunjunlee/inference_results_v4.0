@@ -94,7 +94,7 @@ def main():
     if args.latent is not None:
         init_latent = torch.load(args.latent).to(torch.float16)
 
-    def forward_loop():
+    def forward_loop(*_):
         do_calibrate(
             base=base,
             calibration_prompts=cali_prompts,

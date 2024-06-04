@@ -74,6 +74,8 @@ add_systems("L4x{}", "L4x{}", KnownCPU.AMD_EPYC_7313P.value,
             KnownGPU.L4.value, [1, 2, 4, 8], Memory(100, ByteSuffix.GiB))
 add_systems("L40Sx{}", "L40Sx{}", KnownCPU.AMD_EPYC_7742.value,
             KnownGPU.L40S.value, [1, 2, 4, 8], Memory(100, ByteSuffix.GiB))
+add_systems("GeForceRTX_4090x{}", "GeForceRTX_4090x{}", MATCH_ANY,
+            KnownGPU.GeForceRTX_4090.value, [1, 2, 4, 8], Memory(24, ByteSuffix.GiB))
 
 # Hopper systems
 add_systems("H200_SXM_140GBx{}", "DGX-H200_H200-SXM-140GBx{}", KnownCPU.Intel_Xeon_Platinum_8480C.value,

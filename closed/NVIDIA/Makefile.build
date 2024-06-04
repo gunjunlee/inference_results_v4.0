@@ -36,12 +36,12 @@ LOADGEN_LIB_DIR ?= $(LOADGEN_INCLUDE_DIR)/build
 INFERENCE_HASH = 486a629ea4d5c5150f452d0b0a196bf71fd2021e
 
 # Set Environment variables to extracted contents
-export LD_LIBRARY_PATH := $(LD_LIBRARY_PATH):/usr/local/cuda/lib64:/usr/lib/$(ARCH)-linux-gnu:$(LOADGEN_LIB_DIR)
+# export LD_LIBRARY_PATH := $(LD_LIBRARY_PATH):/usr/local/cuda/lib64:/usr/lib/$(ARCH)-linux-gnu:$(LOADGEN_LIB_DIR)
 export HARNESS_LD_LIBRARY_PATH := $(LD_LIBRARY_PATH)  # LD_LIBRARY_PATH used during run_harness
-export LIBRARY_PATH := /usr/local/cuda/lib64:/usr/lib/$(ARCH)-linux-gnu:$(LOADGEN_LIB_DIR):$(LIBRARY_PATH)
-export PATH := /usr/local/cuda/bin:$(PATH)
-export CPATH := /usr/local/cuda/include:/usr/include/$(ARCH)-linux-gnu:/usr/include/$(ARCH)-linux-gnu/cub:$(CPATH)
-export CUDA_PATH := /usr/local/cuda
+# export LIBRARY_PATH := /usr/local/cuda/lib64:/usr/lib/$(ARCH)-linux-gnu:$(LOADGEN_LIB_DIR):$(LIBRARY_PATH)
+# export PATH := /usr/local/cuda/bin:$(PATH)
+# export CPATH := /usr/local/cuda/include:/usr/include/$(ARCH)-linux-gnu:/usr/include/$(ARCH)-linux-gnu/cub:$(CPATH)
+# export CUDA_PATH := /usr/local/cuda
 export CCACHE_DISABLE=1
 export NUMBA_CACHE_DIR=$(BUILD_DIR)/cache
 
@@ -172,6 +172,9 @@ clone_triton:
 # Build all source codes.
 .PHONY: build
 build: clone_loadgen clone_power_dev link_dirs
+ifneq ($(IS_SOC), 1)
+	@$(MAKE) -f Makefile.build build_faster_transformer
+endif
 ifeq ($(BUILD_TRITON), 1)
 	@$(MAKE) -f Makefile.build clone_triton
 	@$(MAKE) -f Makefile.build build_triton
@@ -183,9 +186,6 @@ endif
 	@$(MAKE) -f Makefile.build build_plugins
 	@$(MAKE) -f Makefile.build build_loadgen
 	@$(MAKE) -f Makefile.build build_harness
-ifneq ($(IS_SOC), 1)
-	@$(MAKE) -f Makefile.build build_faster_transformer
-endif
 
 
 # Clone LoadGen repo.
@@ -220,6 +220,11 @@ else
 		&& git reset --hard HEAD \
 		&& git checkout $(FT_HASH) \
 		&& echo "Patching FasterTransformer"
+ifeq ($(SM), 89)
+	@echo "For x86_64 (custom patch)" \
+		&& cd $(FT_DIR) \
+		&& patch -p1 < ../../scripts/ft.patch;
+endif
 ifeq ($(IS_HOPPER),1)
 	@if [ $(ARCH) == "aarch64" ]; then \
 		echo "For AARCH64" \
@@ -290,7 +295,7 @@ else
 	fi
 ifeq ($(SM), 89)
 	@cd $(FT_BUILD_DIR) \
-		&& cmake -DSM=89 -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DBUILD_TRT=ON -DENABLE_FP8=1 -DUSE_NVTX=$(FT_USE_NVTX) .. \
+		&& cmake -G Ninja -DSM=89 -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) -DBUILD_TRT=ON -DENABLE_FP8=1 -DUSE_NVTX=$(FT_USE_NVTX) .. \
 		&& cmake --build . --target bert_fp8_plugin -j
 else ifeq ($(SM), 90)
 	@cd $(FT_BUILD_DIR) \
