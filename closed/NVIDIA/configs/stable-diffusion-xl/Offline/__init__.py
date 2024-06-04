@@ -105,6 +105,14 @@ class GeForceRTX_4090x1(OfflineGPUBaseConfig):
 
 
 @ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
+class A100_PCIe_40GBx1(OfflineGPUBaseConfig):
+    system = KnownSystem.A100_PCIe_40GBx1
+    gpu_batch_size = 1
+    offline_expected_qps = 0.6
+    use_graphs = True
+
+
+@ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
 class Orin(OfflineGPUBaseConfig):
     system = KnownSystem.Orin
     precision = "fp16"

@@ -90,6 +90,8 @@ add_systems("H100_PCIe_80GB_ARMx{}", "H100-PCIe-80GB_aarch64x{}", KnownCPU.Neove
             KnownGPU.H100_PCIe_80GB.value, [1, 2, 4, 8], Memory(100, ByteSuffix.GiB))
 
 # A100_PCIe_40GB and 80GB based systems:
+add_systems("A100_PCIe_40GBx{}", "A100_PCIe_40GBx{}", MATCH_ANY,
+            KnownGPU.A100_PCIe_40GB.value, [1, 2, 4, 8], Memory(30, ByteSuffix.GiB))
 add_systems("A100_PCIe_40GB_ARMx{}", "A100-PCIe_aarch64x{}", KnownCPU.Neoverse_N1_ARM.value,
             KnownGPU.A100_PCIe_40GB.value, [1, 2, 4], Memory(30, ByteSuffix.GiB))
 add_systems("A100_PCIe_80GBx{}", "A100-PCIe-80GBx{}",

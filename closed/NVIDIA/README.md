@@ -60,7 +60,6 @@ ln -sf $CONDA_PREFIX/lib $CONDA_PREFIX/targets/x86_64-linux/lib64
 
 # download dataset for calibration. The process will take under 1 minutes
 MLPERF_SCRATCH_PATH=$PWD BENCHMARKS=stable-diffusion-xl make download_data
-MLPERF_SCRATCH_PATH=$PWD BENCHMARKS=stable-diffusion-xl make download_model
 
 # download model. (~6.46 GB)
 mkdir -p $PWD/models/SDXL/official_pytorch/fp16
@@ -70,15 +69,35 @@ wget -O $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
 unzip $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
     -d $PWD/models/SDXL/official_pytorch/fp16/
 
+# Create ONNX model. The process will take ~10 mins on RTX 4090
+MLPERF_SCRATCH_PATH=$PWD \
+    LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
+    python3 -m code.stable-diffusion-xl.tensorrt.create_onnx_model --model-dir $PWD/models --output-dir $PWD/models
+
 # Runing SDXL UNet quantization on 500 calibration captions. The process will take ~90 mins on RTX4090
-python3 -m code.stable-diffusion-xl.tensorrt.create_onnx_model --model-dir $PWD/models --output-dir $PWD/models
+MLPERF_SCRATCH_PATH=$PWD \
+    LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
+    python3 -m code.stable-diffusion-xl.ammo.quantize_sdxl \
+    --pretrained-base ${PWD}/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16/checkpoint_pipe/ \
+    --batch-size 1 \
+    --calib-size 500 \
+    --calib-data $PWD/code/stable-diffusion-xl/ammo/captions.tsv \
+    --percentile 0.4 \
+    --n_steps 20 \
+    --latent ${PWD}/data/coco/SDXL/latents.pt \
+    --alpha 0.9 \
+    --quant-level 2.5 \
+    --int8-ckpt-path ${PWD}/models/SDXL/ammo_models/unetxl.int8.pt
 
 # Exporting SDXL fp16-int8 UNet onnx. The process will take ~10 mins on RTX 4090
-python3 -m code.stable-diffusion-xl.ammo.export_onnx \
+MLPERF_SCRATCH_PATH=$PWD \
+    LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
+    python3 -m code.stable-diffusion-xl.ammo.export_onnx \
     --pretrained-base $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16/checkpoint_pipe/ \
     --quantized-ckpt $PWD/models/SDXL/ammo_models/unetxl.int8.pt \
     --quant-level 2.5 \
-    --onnx-dir $PWD/models/SDXL/ammo_models/unetxl.int8
+    --onnx-dir \
+    $PWD/models/SDXL/ammo_models/unetxl.int8  && echo "done" || echo "fail"
 
 # Build Engine
 LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
@@ -90,7 +109,7 @@ LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
     CUDNN_LIB_DIR=$CONDA_PREFIX/lib CUDNN_INC_DIR=$CONDA_PREFIX/include \
     CUDA_INC_DIR=$CONDA_PREFIX/include \
     CMAKE_EXPORT_COMPILE_COMMANDS=ON \
-    make build
+    make build && echo "done" || echo "fail"
 
 if [ ! -d "mitten" ]; then
     git clone https://github.com/NVIDIA/mitten.git
