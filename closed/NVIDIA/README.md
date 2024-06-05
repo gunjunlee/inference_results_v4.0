@@ -61,11 +61,6 @@ ln -sf $CONDA_PREFIX/lib $CONDA_PREFIX/targets/x86_64-linux/lib64
 # download dataset for calibration. The process will take under 1 minutes
 MLPERF_SCRATCH_PATH=$PWD BENCHMARKS=stable-diffusion-xl make download_data
 
-# preprocess dataset
-LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
-    MLPERF_SCRATCH_PATH=$PWD \
-    make preprocess_data BENCHMARKS=stable-diffusion-xl
-
 # download model. (~6.46 GB)
 mkdir -p $PWD/models/SDXL/official_pytorch/fp16
 wget -O $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
@@ -73,6 +68,12 @@ wget -O $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
 
 unzip $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
     -d $PWD/models/SDXL/official_pytorch/fp16/
+
+# preprocess dataset
+LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
+    MLPERF_SCRATCH_PATH=$PWD \
+    make preprocess_data BENCHMARKS=stable-diffusion-xl
+
 
 # Create ONNX model. The process will take ~10 mins on RTX 4090
 MLPERF_SCRATCH_PATH=$PWD \
