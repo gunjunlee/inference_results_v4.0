@@ -54,7 +54,8 @@ CMAKE_C_COMPILER_LAUNCHER=ccache \
     -Dnvinfer_LIB_PATH=$PWD/TensorRT-9.3.0.1/lib/libnvinfer.so \
     -DTRT_OUT_DIR=$PWD/TensorRT/build/out \
     -DCUDNN_ROOT_DIR=$CONDA_PREFIX
-cmake --build $PWD/TensorRT/build -j $(nproc)
+cmake --build $PWD/TensorRT/build -j $(nproc) \
+    && echo "TensorRT build done" || echo "TensorRT build failed"
 
 ln -sf $CONDA_PREFIX/lib $CONDA_PREFIX/targets/x86_64-linux/lib64
 
@@ -76,12 +77,15 @@ fi
 # preprocess dataset
 LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
     MLPERF_SCRATCH_PATH=$PWD \
-    make preprocess_data BENCHMARKS=stable-diffusion-xl
+    make preprocess_data BENCHMARKS=stable-diffusion-xl \
+    && echo "Preprocessing done" || echo "Preprocessing failed"
 
 # Create ONNX model. The process will take ~10 mins on RTX 4090
 MLPERF_SCRATCH_PATH=$PWD \
     LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
-    python3 -m code.stable-diffusion-xl.tensorrt.create_onnx_model --model-dir $PWD/models --output-dir $PWD/models
+    python3 -m code.stable-diffusion-xl.tensorrt.create_onnx_model \
+        --model-dir $PWD/models --output-dir $PWD/models \
+    && echo "ONNX model created" || echo "ONNX model creation failed"
 
 # Runing SDXL UNet quantization on 500 calibration captions. The process will take ~90 mins on RTX4090
 MLPERF_SCRATCH_PATH=$PWD \
@@ -96,7 +100,8 @@ MLPERF_SCRATCH_PATH=$PWD \
     --latent ${PWD}/data/coco/SDXL/latents.pt \
     --alpha 0.9 \
     --quant-level 2.5 \
-    --int8-ckpt-path ${PWD}/models/SDXL/ammo_models/unetxl.int8.pt
+    --int8-ckpt-path ${PWD}/models/SDXL/ammo_models/unetxl.int8.pt \
+    && echo "Quantization done" || echo "Quantization failed"
 
 # Exporting SDXL fp16-int8 UNet onnx. The process will take ~10 mins on RTX 4090
 MLPERF_SCRATCH_PATH=$PWD \
@@ -106,7 +111,8 @@ MLPERF_SCRATCH_PATH=$PWD \
     --quantized-ckpt $PWD/models/SDXL/ammo_models/unetxl.int8.pt \
     --quant-level 2.5 \
     --onnx-dir \
-    $PWD/models/SDXL/ammo_models/unetxl.int8  && echo "done" || echo "fail"
+    $PWD/models/SDXL/ammo_models/unetxl.int8 \
+    && echo "Exporting done" || echo "Exporting failed"
 
 # Build Engine
 LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
@@ -118,7 +124,8 @@ LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
     CUDNN_LIB_DIR=$CONDA_PREFIX/lib CUDNN_INC_DIR=$CONDA_PREFIX/include \
     CUDA_INC_DIR=$CONDA_PREFIX/include \
     CMAKE_EXPORT_COMPILE_COMMANDS=ON \
-    make build && echo "done" || echo "fail"
+    make build \
+    && echo "Building engine done" || echo "Building engine failed"
 
 if [ ! -d "mitten" ]; then
     git clone https://github.com/NVIDIA/mitten.git
@@ -132,12 +139,14 @@ LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
     CPATH=$CONDA_PREFIX/include \
     CXXPATH=$CONDA_PREFIX/include \
     MLPERF_SCRATCH_PATH=$PWD \
-    make generate_engines RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=Offline"
+    make generate_engines RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=Offline" \
+    && echo "Generating engine done" || echo "Generating engine failed"
 
 # Run benchmark
 LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
     MLPERF_SCRATCH_PATH=$PWD \
-    make run_harness RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=Offline --test_mode=PerformanceOnly"
+    make run_harness RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=Offline --test_mode=PerformanceOnly" \
+    && echo "Running benchmark done" || echo "Running benchmark failed"
 ```
 
 # MLPerf Inference v4.0 NVIDIA-Optimized Implementations
