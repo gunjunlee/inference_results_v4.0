@@ -1,9 +1,11 @@
 build/
 models/
 data/
+preprocessed_data/
 __pycache__/
 TensorRT-9.3.0.1/
 TensorRT/
 *.tar.gz
 mitten/
 .vscode/
+.envrc
