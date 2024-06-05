@@ -63,17 +63,20 @@ MLPERF_SCRATCH_PATH=$PWD BENCHMARKS=stable-diffusion-xl make download_data
 
 # download model. (~6.46 GB)
 mkdir -p $PWD/models/SDXL/official_pytorch/fp16
-wget -O $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
-    https://cloud.mlcommons.org/index.php/s/LCdW5RM6wgGWbxC/download
+if [ ! -f "$PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip" ]; then
+    wget -O $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
+        https://cloud.mlcommons.org/index.php/s/LCdW5RM6wgGWbxC/download
+fi
 
-unzip $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
-    -d $PWD/models/SDXL/official_pytorch/fp16/
+if [ ! -d "$PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16" ]; then
+    unzip $PWD/models/SDXL/official_pytorch/fp16/stable_diffusion_fp16.zip \
+        -d $PWD/models/SDXL/official_pytorch/fp16/
+fi
 
 # preprocess dataset
 LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
     MLPERF_SCRATCH_PATH=$PWD \
     make preprocess_data BENCHMARKS=stable-diffusion-xl
-
 
 # Create ONNX model. The process will take ~10 mins on RTX 4090
 MLPERF_SCRATCH_PATH=$PWD \
