@@ -34,7 +34,7 @@ custom_list.py, which both require these Enums."""
 
 
 def mem_to_bytes(m): return m.to_bytes()
-def match_float_approximate(m): return MatchFloatApproximate(m, mem_to_bytes, rel_tol=0.05)
+def match_float_approximate(m, rel_tol=0.05): return MatchFloatApproximate(m, mem_to_bytes, rel_tol=rel_tol)
 
 """Helper functions to create 'MatchFloatApproximate' representations of Memory"""
 
@@ -98,9 +98,9 @@ class KnownGPU(MatchableEnum):
                max_power_limit=350.0,
                pci_id=pci_id_match_list(("26B9",)),
                compute_sm=89)
-    GeForceRTX_4090 = GPU(AliasedName("NVIDIA GeForce RTX 4090", ("NVIDIA GeForce RTX 4090")),
+    GeForceRTX_4090 = GPU(AliasedName("NVIDIA GeForce RTX 4090", ("NVIDIA GeForce RTX 4090",)),
                           AcceleratorType.Discrete,
-                          match_float_approximate(Memory(24, ByteSuffix.GiB)),
+                          match_float_approximate(Memory(24, ByteSuffix.GiB), rel_tol=0.1),
                           520.0,
                           pci_id_match_list(("2684",)), # https://download.nvidia.com/XFree86/Linux-x86_64/555.42.02/README/supportedchips.html
                           89)
