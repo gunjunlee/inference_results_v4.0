@@ -115,6 +115,9 @@ MLPERF_SCRATCH_PATH=$PWD \
     && echo "Exporting done" || echo "Exporting failed"
 
 # Build Engine
+if [ -d "$PWD/build" ]; then
+    rm -rf $PWD/build
+fi
 LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
     CPATH=$CONDA_PREFIX/include \
     CXXPATH=$CONDA_PREFIX/include \
