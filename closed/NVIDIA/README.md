@@ -43,7 +43,7 @@ if [ ! -d "TensorRT" ]; then
 fi
 cd TensorRT && git checkout v9.3.0 && git submodule update --init --recursive && cd ..
 
-if [ ! -d "TensorRT/build" ]; then
+if [ -d "TensorRT/build" ]; then
     rm -rf $PWD/TensorRT/build
 fi
 CMAKE_C_COMPILER_LAUNCHER=ccache \
