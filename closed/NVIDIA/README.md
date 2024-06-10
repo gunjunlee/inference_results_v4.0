@@ -18,7 +18,7 @@ conda install -c nvidia cuda-toolkit=12.1 --dry-run --json \
         conda-tree pkg-config \
         "kernel-headers_linux-64>=4" \
         cmake ninja ccache c-compiler cxx-compiler \
-        glog=0.3.5 pybind11 libnuma curl
+        glog=0.3.5 pybind11 libnuma curl pudb colored
 
 # if TensorRT-9.3.0.1 is not available, download it from the NVIDIA website
 if [ ! -d "TensorRT-9.3.0.1" ]; then
