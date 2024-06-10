@@ -19,10 +19,12 @@ for CVD in "${CVDS[@]}"; do
     for scenario in Offline Server; do
         for gpu_batch_size in 1 2 4 8; do
             echo "build scenario=${scenario} bs=${gpu_batch_size} gpus=${CVD}"
-            LOGDIR="build/logs/generate_engines/scenario-{}-bs-{}-gpus-{}"
+            LOGDIR="build/logs/generate_engines/scenario-${scenario}-bs-${gpu_batch_size}-gpus-${CVD}"
             mkdir -p $LOGDIR
             LOG_OUT=${LOGDIR}/stdout.log
             LOG_ERR=${LOGDIR}/stderr.log
+            echo "stdout: ${LOG_OUT}"
+            echo "stderr: ${LOG_ERR}"
             LD_LIBRARY_PATH=$CONDA_PREFIX/lib
                 CPATH=$CONDA_PREFIX/include \
                 CXXPATH=$CONDA_PREFIX/include \
