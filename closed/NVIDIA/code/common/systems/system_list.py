@@ -96,7 +96,7 @@ add_systems("A100_PCIe_40GB_ARMx{}", "A100-PCIe_aarch64x{}", KnownCPU.Neoverse_N
             KnownGPU.A100_PCIe_40GB.value, [1, 2, 4], Memory(30, ByteSuffix.GiB))
 add_systems("A100_PCIe_80GBx{}", "A100-PCIe-80GBx{}",
             MatchAllowList([KnownCPU.AMD_EPYC_7742.value, KnownCPU.x86_64_Generic.value]),
-            KnownGPU.A100_PCIe_80GB.value, [1, 8], Memory(30, ByteSuffix.GiB))
+            KnownGPU.A100_PCIe_80GB.value, [1, 2, 4, 8], Memory(30, ByteSuffix.GiB))
 add_systems("A100_PCIe_80GB_ARMx{}", "A100-PCIe-80GB_aarch64x{}", KnownCPU.Neoverse_N1_ARM.value,
             KnownGPU.A100_PCIe_80GB.value, [1, 2, 4], Memory(30, ByteSuffix.GiB))
 

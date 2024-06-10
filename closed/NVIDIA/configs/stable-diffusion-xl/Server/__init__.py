@@ -119,7 +119,7 @@ class A100_PCIe_40GBx1(ServerGPUBaseConfig):
     sdxl_batcher_time_limit = 0
     server_target_qps = 0.6
     use_graphs = True
-    min_query_count = 6 * 800
+    min_query_count = 200
 
 
 @ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
@@ -129,5 +129,25 @@ class A100_PCIe_40GBx2(ServerGPUBaseConfig):
     sdxl_batcher_time_limit = 0
     server_target_qps = 1.2
     use_graphs = True
-    min_query_count = 6 * 800
+    min_query_count = 200
+
+
+@ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
+class A100_PCIe_80GBx1(ServerGPUBaseConfig):
+    system = KnownSystem.A100_PCIe_80GBx1
+    gpu_batch_size = 8
+    sdxl_batcher_time_limit = 0
+    server_target_qps = 0.6
+    use_graphs = True
+    min_query_count = 200
+
+
+@ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
+class A100_PCIe_80GBx2(ServerGPUBaseConfig):
+    system = KnownSystem.A100_PCIe_80GBx2
+    gpu_batch_size = 8
+    sdxl_batcher_time_limit = 0
+    server_target_qps = 1.2
+    use_graphs = True
+    min_query_count = 200
 
