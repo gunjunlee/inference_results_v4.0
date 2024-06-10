@@ -100,3 +100,34 @@ class L40Sx8(L40Sx1):
     server_target_qps = 5.05
     use_graphs = True
     min_query_count = 8 * 800
+
+
+@ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
+class GeForceRTX_4090x1(ServerGPUBaseConfig):
+    system = KnownSystem.GeForceRTX_4090x1
+    gpu_batch_size = 1
+    sdxl_batcher_time_limit = 0
+    server_target_qps = 0.7
+    use_graphs = True
+    min_query_count = 6 * 800
+
+
+@ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
+class A100_PCIe_40GBx1(ServerGPUBaseConfig):
+    system = KnownSystem.A100_PCIe_40GBx1
+    gpu_batch_size = 4
+    sdxl_batcher_time_limit = 0
+    server_target_qps = 0.6
+    use_graphs = True
+    min_query_count = 6 * 800
+
+
+@ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
+class A100_PCIe_40GBx2(ServerGPUBaseConfig):
+    system = KnownSystem.A100_PCIe_40GBx1
+    gpu_batch_size = 4
+    sdxl_batcher_time_limit = 0
+    server_target_qps = 1.2
+    use_graphs = True
+    min_query_count = 6 * 800
+
