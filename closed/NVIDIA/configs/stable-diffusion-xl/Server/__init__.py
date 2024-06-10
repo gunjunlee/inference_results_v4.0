@@ -124,7 +124,7 @@ class A100_PCIe_40GBx1(ServerGPUBaseConfig):
 
 @ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
 class A100_PCIe_40GBx2(ServerGPUBaseConfig):
-    system = KnownSystem.A100_PCIe_40GBx1
+    system = KnownSystem.A100_PCIe_40GBx2
     gpu_batch_size = 4
     sdxl_batcher_time_limit = 0
     server_target_qps = 1.2
