@@ -18,7 +18,7 @@ echo "CUDA_VISIBLE_DEVICES = ${CVDS[*]}"
 for CVD in "${CVDS[@]}"; do
     for scenario in Server Offline; do
         for gpu_batch_size in 1 2 4 8; do
-            for qps in 0.1 0.2 0.3 0.5 0.7 0.9 1.1 1.3 1.5; do
+            for qps in 0.2 0.3 0.5 0.7 0.9 1.1 1.3 1.5; do
                 echo "run scenario=${scenario} bs=${gpu_batch_size} gpus=${CVD} qps=${qps}"
                 LOGDIR="build/logs/benchmark/scenario-${scenario}-bs-${gpu_batch_size}-gpus-${CVD}-qps-${qps}"
                 mkdir -p $LOGDIR
