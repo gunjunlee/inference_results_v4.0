@@ -916,7 +916,7 @@ class Fields(Enum):
     server_target_qps: Field = Field(
         "server_target_qps",
         "Target QPS used for server scenario",
-        value_type=int,
+        value_type=float,
         supported_actions=_HARNESS_ACTIONS,
         supported_scenarios=(Scenario.Server,))
 

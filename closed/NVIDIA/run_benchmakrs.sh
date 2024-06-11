@@ -29,7 +29,7 @@ for CVD in "${CVDS[@]}"; do
                 LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
                     MLPERF_SCRATCH_PATH=$PWD \
                     CUDA_VISIBLE_DEVICES=${CVD} \
-                    make run_harness RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=${scenario} --test_mode=PerformanceOnly --fast --log_dir=${LOGDIR} --gpu_batch_size=${gpu_batch_size} --target_qps=${qps}" \
+                    make run_harness RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=${scenario} --test_mode=PerformanceOnly --fast --log_dir=${LOGDIR} --gpu_batch_size=${gpu_batch_size} --server_target_qps=${qps}" \
                     > $LOG_OUT 2> $LOG_ERR \
                     && echo "Running benchmark done" || echo "Running benchmark failed"
             done;

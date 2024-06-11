@@ -481,7 +481,7 @@ arguments_dict = {
     # Server harness arguments
     "server_target_qps": {
         "help": "Target QPS for server scenario.",
-        "type": int,
+        "type": float,
     },
     "server_target_qps_adj_factor": {
         "help": "Adjustment Factor for Target QPS for server scenario.",
