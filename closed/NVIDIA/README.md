@@ -57,7 +57,7 @@ CMAKE_C_COMPILER_LAUNCHER=ccache \
 cmake --build $PWD/TensorRT/build -j $(nproc) \
     && echo "TensorRT build done" || echo "TensorRT build failed"
 
-ln -sf $CONDA_PREFIX/lib $CONDA_PREFIX/targets/x86_64-linux/lib64
+find "$CONDA_PREFIX/targets/x86_64-linux/lib64/" -type l,f -exec basename {} \; | xargs -I{} ln -s $CONDA_PREFIX/targets/x86_64-linux/lib64/{} $CONDA_PREFIX/lib/{}
 
 # download dataset for calibration. The process will take under 1 minutes
 MLPERF_SCRATCH_PATH=$PWD BENCHMARKS=stable-diffusion-xl make download_data
