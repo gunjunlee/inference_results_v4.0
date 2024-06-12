@@ -9,3 +9,6 @@ TensorRT/
 mitten/
 .vscode/
 .envrc
+pytorch_model/
+onnx/
+engine

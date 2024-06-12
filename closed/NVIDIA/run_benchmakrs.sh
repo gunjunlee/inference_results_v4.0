@@ -24,6 +24,7 @@ for CVD in "${CVDS[@]}"; do
                 mkdir -p $LOGDIR
                 LOG_OUT=${LOGDIR}/stdout.log
                 LOG_ERR=${LOGDIR}/stderr.log
+                grep -i "Result summaries" $LOG_OUT > /dev/null 2>&1 && echo "Benchmark already done" && continue
                 echo "stdout: ${LOG_OUT}"
                 echo "stderr: ${LOG_ERR}"
                 LD_LIBRARY_PATH=$CONDA_PREFIX/lib \

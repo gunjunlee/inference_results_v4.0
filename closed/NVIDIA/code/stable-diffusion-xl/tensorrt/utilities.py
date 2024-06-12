@@ -57,6 +57,7 @@ class PipelineConfig:
 def CUASSERT(cuda_ret):
     err = cuda_ret[0]
     if err != cudart.cudaError_t.cudaSuccess:
+        print("CUDA ERROR: ", err)
         raise RuntimeError(f"CUDA ERROR: {err}, error code reference: https://nvidia.github.io/cuda-python/module/cudart.html#cuda.cudart.cudaError_t")
 
     if len(cuda_ret) > 1:

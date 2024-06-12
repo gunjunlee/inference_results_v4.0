@@ -56,6 +56,9 @@ def run_command(cmd, get_output=False, tee=True, custom_env=None, verbose=True):
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
         for line in iter(p.stdout.readline, b""):
             line = line.decode("utf-8")
+            if "error" in line.lower():
+                p.kill()
+                raise RuntimeError("ERROR detected!")
             if tee:
                 sys.stdout.write(line)
                 sys.stdout.flush()
