@@ -30,6 +30,7 @@ class OfflineGPUBaseConfig(GPUBaseConfig):
     use_graphs = False
     gpu_inference_streams = 1
     gpu_copy_streams = 1
+    min_query_count = 128
 
 
 @ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)

@@ -31,6 +31,7 @@ class ServerGPUBaseConfig(GPUBaseConfig):
     gpu_inference_streams = 1
     gpu_copy_streams = 1
     sdxl_batcher_time_limit = 2
+    min_query_count = 128
 
 
 @ConfigRegistry.register(HarnessType.Custom, AccuracyTarget.k_99, PowerSetting.MaxP)
