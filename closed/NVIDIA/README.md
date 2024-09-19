@@ -142,7 +142,7 @@ LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
     CPATH=$CONDA_PREFIX/include \
     CXXPATH=$CONDA_PREFIX/include \
     MLPERF_SCRATCH_PATH=$PWD \
-    make generate_engines RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=Offline" \
+    make generate_engines RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=Offline --verbose_nvtx" \
     && echo "Generating engine done" || echo "Generating engine failed"
 
 # Run benchmark

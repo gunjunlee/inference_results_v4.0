@@ -17,7 +17,7 @@ echo "CUDA_VISIBLE_DEVICES = ${CVDS[*]}"
 
 for CVD in "${CVDS[@]}"; do
     for scenario in Offline Server; do
-        for gpu_batch_size in 1 2 4 8; do
+        for gpu_batch_size in 1 2; do
             for qps in 0.2 0.3 0.5 0.7 0.9 1.1 1.3 1.5; do
                 echo "run scenario=${scenario} bs=${gpu_batch_size} gpus=${CVD} qps=${qps}"
                 LOGDIR="build/logs/benchmark/scenario-${scenario}-bs-${gpu_batch_size}-gpus-${CVD}-qps-${qps}"
@@ -38,3 +38,22 @@ for CVD in "${CVDS[@]}"; do
     done;
 done;
 
+
+scenario=Server
+gpu_batch_size=1
+CVD=0
+qps=0.6
+echo "run scenario=${scenario} bs=${gpu_batch_size} gpus=${CVD} qps=${qps}"
+LOGDIR="build/logs/benchmark/scenario-${scenario}-bs-${gpu_batch_size}-gpus-${CVD}-qps-${qps}"
+mkdir -p $LOGDIR
+LOG_OUT=${LOGDIR}/stdout.log
+LOG_ERR=${LOGDIR}/stderr.log
+grep -i "Result summaries" $LOG_OUT > /dev/null 2>&1 && echo "Benchmark already done" && continue
+echo "stdout: ${LOG_OUT}"
+echo "stderr: ${LOG_ERR}"
+LD_LIBRARY_PATH=$CONDA_PREFIX/lib \
+    MLPERF_SCRATCH_PATH=$PWD \
+    CUDA_VISIBLE_DEVICES=${CVD} \
+    make run_harness RUN_ARGS="--benchmarks=stable-diffusion-xl --scenarios=${scenario} --test_mode=PerformanceOnly --fast --log_dir=${LOGDIR} --gpu_batch_size=${gpu_batch_size} --server_target_qps=${qps} --offline_expected_qps=${qps}" \
+    > $LOG_OUT 2> $LOG_ERR \
+    && echo "Running benchmark done" || echo "Running benchmark failed"

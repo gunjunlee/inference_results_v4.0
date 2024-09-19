@@ -99,9 +99,10 @@ class SDXLBaseBuilder(TRTBuilder,
         if model.ByteSize() >= SDXLGraphSurgeon.ONNX_LARGE_FILE_THRESHOLD:
             # onnx._serialize cannot take input proto >= 2 BG
             # We need to save proto larger than 2GB into separate files and parse from files
-            with tempfile.TemporaryDirectory() as tmp_dir:
+            # with tempfile.TemporaryDirectory() as tmp_dir:
+            with Path("simplified_onnx").resolve() as tmp_dir:
                 tmp_path = Path(tmp_dir)
-                tmp_path.mkdir(exist_ok=True)
+                tmp_path.mkdir(exist_ok=True, parents=True)
                 onnx_tmp_path = tmp_path / "tmp_model.onnx"
                 onnx.save_model(model,
                                 str(onnx_tmp_path),

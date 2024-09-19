@@ -12,3 +12,4 @@ mitten/
 pytorch_model/
 onnx/
 engine
+.*
